@@ -34,7 +34,8 @@ public class Processes implements Runnable {
 	private boolean isRoot, exploreToSend, firstRound, addReadyMsg = false;
 	private boolean doneFlag = false;
 	// List in which messages to send in next round are populated.
-	//private HashMap<Processes, Message> sendList = new HashMap<Processes, Message>();
+	// private HashMap<Processes, Message> sendList = new HashMap<Processes,
+	// Message>();
 	private List<SendList> sendList = new ArrayList<SendList>();
 	private ArrayList<Integer> indexToRemove = new ArrayList<Integer>();
 	// Save the state of the neighbors.
@@ -71,7 +72,6 @@ public class Processes implements Runnable {
 			this.distanceFromRoot = Integer.MAX_VALUE;
 			this.isRoot = false;
 		}
-		this.debugStatements = true;
 	}
 
 	// Function to add message to this processes Interprocess Q
@@ -189,7 +189,7 @@ public class Processes implements Runnable {
 					}
 
 					if (sendList.size() > 0) {
-						for(int id = 0; id < sendList.size(); id++) {
+						for (int id = 0; id < sendList.size(); id++) {
 							Message toSendMsg = sendList.get(id).getMessage();
 							int time = toSendMsg.getTimeToSend();
 							if (time > 0) {
@@ -233,8 +233,9 @@ public class Processes implements Runnable {
 							message = qIn.take();
 							// Explore message handler
 							if (message.getMessageType() == Message.MessageType.EXPLORE) {
-								System.out.println(
-										"Eplore RCVD FROM: " + message.getProcessId() + " AT: " + this.ProcessId);
+								if (this.debugStatements)
+									System.out.println(
+											"Eplore RCVD FROM: " + message.getProcessId() + " AT: " + this.ProcessId);
 								// Relaxation step for Bellman-Ford Algorithm
 								exploreIDs.add(message.getProcessId());
 								if (this.distanceFromRoot > (int) message.getDistance()) {
@@ -268,13 +269,15 @@ public class Processes implements Runnable {
 								int tts;
 								if (lastMessageSentTimer.containsKey(id)) {
 									tts = lastMessageSentTimer.get(id) + timeToSendMessage.nextInt(18) + 1;
-									System.out.println("*** NACK 1 **** TTS: " + tts + " TO: " + id + " FROM: "
-											+ this.getProcessId());
+									if (this.debugStatements)
+										System.out.println("*** NACK 1 **** TTS: " + tts + " TO: " + id + " FROM: "
+												+ this.getProcessId());
 									lastMessageSentTimer.replace(id, tts);
 								} else {
 									tts = timeToSendMessage.nextInt(18) + 1;
-									System.out.println("*** NACK 2 *** TTS: " + tts + " TO: " + id + " FROM: "
-											+ this.getProcessId());
+									if (this.debugStatements)
+										System.out.println("*** NACK 2 *** TTS: " + tts + " TO: " + id + " FROM: "
+												+ this.getProcessId());
 									lastMessageSentTimer.put(id, tts);
 								}
 								message = new Message(this.ProcessId, Message.MessageType.NACK, Integer.MAX_VALUE, 'N',
@@ -310,13 +313,15 @@ public class Processes implements Runnable {
 							int nbr_id = e.getNeighbour(this).getProcessId();
 							if (lastMessageSentTimer.containsKey(nbr_id)) {
 								tts = lastMessageSentTimer.get(nbr_id) + timeToSendMessage.nextInt(18) + 1;
-								System.out.println("** EXPLORE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
-										+ this.getProcessId());
+								if (this.debugStatements)
+									System.out.println("** EXPLORE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
+											+ this.getProcessId());
 								lastMessageSentTimer.replace(nbr_id, tts);
 							} else {
 								tts = timeToSendMessage.nextInt(18) + 1;
-								System.out.println("**  EXPLORE 2 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
-										+ this.getProcessId());
+								if (this.debugStatements)
+									System.out.println("**  EXPLORE 2 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
+											+ this.getProcessId());
 								lastMessageSentTimer.put(nbr_id, tts);
 							}
 							message = new Message(this.ProcessId, Message.MessageType.EXPLORE,
@@ -332,7 +337,8 @@ public class Processes implements Runnable {
 							}
 						}
 					}
-					System.out.println("Process: "+this.ProcessId+" DONE: "+this.doneFlag);
+					if (this.debugStatements)
+						System.out.println("Process: " + this.ProcessId + " DONE: " + this.doneFlag);
 					// send DONE to parent
 					if (!doneFlag) {
 						doneFlag = false;
@@ -363,13 +369,15 @@ public class Processes implements Runnable {
 									int tts;
 									if (lastMessageSentTimer.containsKey(nbr_id)) {
 										tts = lastMessageSentTimer.get(nbr_id) + timeToSendMessage.nextInt(18) + 1;
-										System.out.println("** DONE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
-												+ this.getProcessId());
+										if (this.debugStatements)
+											System.out.println("** DONE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
+													+ this.getProcessId());
 										lastMessageSentTimer.replace(nbr_id, tts);
 									} else {
 										tts = timeToSendMessage.nextInt(18) + 1;
-										System.out.println("*** DONE 2 *** TTS: " + tts + " TO: " + nbr_id + " FROM: "
-												+ this.getProcessId());
+										if (this.debugStatements)
+											System.out.println("*** DONE 2 *** TTS: " + tts + " TO: " + nbr_id
+													+ " FROM: " + this.getProcessId());
 										lastMessageSentTimer.put(nbr_id, tts);
 									}
 									message = new Message(this.ProcessId, Message.MessageType.DONE, Integer.MIN_VALUE,
@@ -395,40 +403,44 @@ public class Processes implements Runnable {
 					while (qReadyToSend.size() != 0)
 						;
 					// Send all the outgoing messages.
-//					if (sendList.size() > 0) {
-//						Iterator<Entry<Processes, Message>> iter = sendList.entrySet().iterator();
-//						while (iter.hasNext()) {
-//							Map.Entry<Processes, Message> pair = (Map.Entry<Processes, Message>) iter.next();
-//							Processes toSend = pair.getKey();
-//							Message toSendMsg = pair.getValue();
-//							if (toSendMsg.getTimeToSend() == 0) {
-//								toSend.writeToQIn(toSendMsg);
-//								if (this.debugStatements)
-//									System.out.println("*Round NO.: " + this.roundNo + " To: " + toSend.getProcessId()
-//											+ " " + toSendMsg.debug() + "\n");
-//								iter.remove();
-//							}
-//						}
-//					}
+					// if (sendList.size() > 0) {
+					// Iterator<Entry<Processes, Message>> iter =
+					// sendList.entrySet().iterator();
+					// while (iter.hasNext()) {
+					// Map.Entry<Processes, Message> pair =
+					// (Map.Entry<Processes, Message>) iter.next();
+					// Processes toSend = pair.getKey();
+					// Message toSendMsg = pair.getValue();
+					// if (toSendMsg.getTimeToSend() == 0) {
+					// toSend.writeToQIn(toSendMsg);
+					// if (this.debugStatements)
+					// System.out.println("*Round NO.: " + this.roundNo + " To:
+					// " + toSend.getProcessId()
+					// + " " + toSendMsg.debug() + "\n");
+					// iter.remove();
+					// }
+					// }
+					// }
 					if (sendList.size() > 0) {
-						for(int id = 0; id < sendList.size(); id++) {
-							if(sendList.get(id).isSent())
+						for (int id = 0; id < sendList.size(); id++) {
+							if (sendList.get(id).isSent())
 								continue;
 							Message toSendMsg = sendList.get(id).getMessage();
-							if(toSendMsg.getTimeToSend() == 0){
+							if (toSendMsg.getTimeToSend() == 0) {
 								sendList.get(id).getProcess().writeToQIn(toSendMsg);
 								sendList.get(id).setSent(true);
 								if (this.debugStatements)
-									System.out.println("*Round NO.: " + this.roundNo + " To: " + sendList.get(id).getProcess().getProcessId()
-											+ " " + toSendMsg.debug() + "\n");
+									System.out.println("*Round NO.: " + this.roundNo + " To: "
+											+ sendList.get(id).getProcess().getProcessId() + " " + toSendMsg.debug()
+											+ "\n");
 								indexToRemove.add(id);
 							}
 						}
 					}
-//					for(int index : indexToRemove){
-//						sendList.remove(index);
-//					}
-//					indexToRemove.clear();
+					// for(int index : indexToRemove){
+					// sendList.remove(index);
+					// }
+					// indexToRemove.clear();
 					// Signal READY for next round
 					Message readyMSG = new Message(this.ProcessId, Message.MessageType.READY, Integer.MIN_VALUE, 'R');
 					synchronized (this) {
