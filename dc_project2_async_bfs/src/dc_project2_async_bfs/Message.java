@@ -1,5 +1,12 @@
 package dc_project2_async_bfs;
-
+/*
+ * Team Members:
+ * Sujal Patel (ssp150930)
+ * Harshil Shah (hxs155030)
+ * Sagar Mehta (sam150930)
+ * 
+ * This represents a message which has processId, message type, distance from the root, and debug character information.
+ */
 public class Message {
 	// Type of messages
 	public enum MessageType {

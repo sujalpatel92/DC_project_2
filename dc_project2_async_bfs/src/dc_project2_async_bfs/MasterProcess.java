@@ -1,5 +1,12 @@
 package dc_project2_async_bfs;
-
+/*
+ * Team Members:
+ * Sujal Patel (ssp150930)
+ * Harshil Shah (hxs155030)
+ * Sagar Mehta (sam150930)
+ * 
+ * This class is the main class. It acts as master thread that synchronizes rounds.
+ */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,10 +1,16 @@
 package dc_project2_async_bfs;
-
+/**
+ * Team Members:
+ * Sujal Patel (ssp150930)
+ * Harshil Shah (hxs155030)
+ * Sagar Mehta (sam150930)
+ * 
+ * This is the individual process class which runs asyncBFS algorithm. 
+ */
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -34,10 +40,7 @@ public class Processes implements Runnable {
 	private boolean isRoot, exploreToSend, firstRound, addReadyMsg = false;
 	private boolean doneFlag = false;
 	// List in which messages to send in next round are populated.
-	// private HashMap<Processes, Message> sendList = new HashMap<Processes,
-	// Message>();
 	private List<SendList> sendList = new ArrayList<SendList>();
-	private ArrayList<Integer> indexToRemove = new ArrayList<Integer>();
 	// Save the state of the neighbors.
 	private HashMap<Integer, State> stateList = new HashMap<Integer, State>();
 	// List in which ID's of processes who sent EXPLORE message to this process
@@ -208,7 +211,6 @@ public class Processes implements Runnable {
 						while (Iter.hasNext()) {
 							Edge E = Iter.next();
 							neighbourProcess = E.getNeighbour(this);
-							// int Distance = distanceFromRoot + E.getWeight();
 							int Distance = 1;
 							int tts = (timeToSendMessage.nextInt(18) + 1);
 							message = new Message(this.ProcessId, Message.MessageType.EXPLORE, Distance, 'I', tts,
@@ -236,7 +238,6 @@ public class Processes implements Runnable {
 								if (this.debugStatements)
 									System.out.println(
 											"Eplore RCVD FROM: " + message.getProcessId() + " AT: " + this.ProcessId);
-								// Relaxation step for Bellman-Ford Algorithm
 								exploreIDs.add(message.getProcessId());
 								if (this.distanceFromRoot > (int) message.getDistance()) {
 									this.distanceFromRoot = (int) message.getDistance();
@@ -268,7 +269,11 @@ public class Processes implements Runnable {
 							if (id != this.parentID) {
 								int tts;
 								if (lastMessageSentTimer.containsKey(id)) {
-									tts = lastMessageSentTimer.get(id) + timeToSendMessage.nextInt(18) + 1;
+									tts = timeToSendMessage.nextInt(18) + 1;
+									if (tts <= lastMessageSentTimer.get(id))
+									{
+										tts += (lastMessageSentTimer.get(id) - tts + 1);
+									}
 									if (this.debugStatements)
 										System.out.println("*** NACK 1 **** TTS: " + tts + " TO: " + id + " FROM: "
 												+ this.getProcessId());
@@ -312,7 +317,11 @@ public class Processes implements Runnable {
 							int tts;
 							int nbr_id = e.getNeighbour(this).getProcessId();
 							if (lastMessageSentTimer.containsKey(nbr_id)) {
-								tts = lastMessageSentTimer.get(nbr_id) + timeToSendMessage.nextInt(18) + 1;
+								tts = timeToSendMessage.nextInt(18) + 1;
+								if (tts <= lastMessageSentTimer.get(nbr_id))
+								{
+									tts += (lastMessageSentTimer.get(nbr_id) - tts + 1);
+								}
 								if (this.debugStatements)
 									System.out.println("** EXPLORE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
 											+ this.getProcessId());
@@ -368,7 +377,11 @@ public class Processes implements Runnable {
 									int nbr_id = ngbhr.getProcessId();
 									int tts;
 									if (lastMessageSentTimer.containsKey(nbr_id)) {
-										tts = lastMessageSentTimer.get(nbr_id) + timeToSendMessage.nextInt(18) + 1;
+										tts = timeToSendMessage.nextInt(18) + 1;
+										if (tts <= lastMessageSentTimer.get(nbr_id))
+										{
+											tts += (lastMessageSentTimer.get(nbr_id) - tts + 1);
+										}
 										if (this.debugStatements)
 											System.out.println("** DONE 1 ** TTS: " + tts + " TO: " + nbr_id + " FROM: "
 													+ this.getProcessId());
@@ -403,24 +416,6 @@ public class Processes implements Runnable {
 					while (qReadyToSend.size() != 0)
 						;
 					// Send all the outgoing messages.
-					// if (sendList.size() > 0) {
-					// Iterator<Entry<Processes, Message>> iter =
-					// sendList.entrySet().iterator();
-					// while (iter.hasNext()) {
-					// Map.Entry<Processes, Message> pair =
-					// (Map.Entry<Processes, Message>) iter.next();
-					// Processes toSend = pair.getKey();
-					// Message toSendMsg = pair.getValue();
-					// if (toSendMsg.getTimeToSend() == 0) {
-					// toSend.writeToQIn(toSendMsg);
-					// if (this.debugStatements)
-					// System.out.println("*Round NO.: " + this.roundNo + " To:
-					// " + toSend.getProcessId()
-					// + " " + toSendMsg.debug() + "\n");
-					// iter.remove();
-					// }
-					// }
-					// }
 					if (sendList.size() > 0) {
 						for (int id = 0; id < sendList.size(); id++) {
 							if (sendList.get(id).isSent())
@@ -433,14 +428,9 @@ public class Processes implements Runnable {
 									System.out.println("*Round NO.: " + this.roundNo + " To: "
 											+ sendList.get(id).getProcess().getProcessId() + " " + toSendMsg.debug()
 											+ "\n");
-								indexToRemove.add(id);
 							}
 						}
 					}
-					// for(int index : indexToRemove){
-					// sendList.remove(index);
-					// }
-					// indexToRemove.clear();
 					// Signal READY for next round
 					Message readyMSG = new Message(this.ProcessId, Message.MessageType.READY, Integer.MIN_VALUE, 'R');
 					synchronized (this) {
